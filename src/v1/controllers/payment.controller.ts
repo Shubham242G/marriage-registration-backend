@@ -24,6 +24,8 @@ const paymentConfig = {
   FRONTEND_URL: process.env.FRONTEND_URL!,
 };
 
+const doc = new PDFDocument();
+
 // --- Helper Functions ---
 
 const _createNewSubscription = async (
