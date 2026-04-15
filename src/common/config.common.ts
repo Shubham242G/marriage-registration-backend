@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config({ override: true });
 
 // SECURITY: Validate required environment variables
-const requiredEnvVars = ["JWT_ACCESS_TOKEN_SECRET", "MONGOURI"];
+const requiredEnvVars = ["JWT_ACCESS_TOKEN_SECRET", "MONGO_URI"];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`SECURITY WARNING: Required environment variable ${envVar} is not set!`);
