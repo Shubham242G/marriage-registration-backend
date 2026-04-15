@@ -159,7 +159,7 @@ export async function downloadFile(fileUrl: string) {
   const filePath = path.join(process.cwd(), "public", "uploads", filename);
 
   // Make the request and download the file
-  
+
   const fileStream: any = await new Promise((resolve, reject) => {
     const request = https.get(fileUrl, (response: any) => {
       if (response.statusCode !== 200) {
