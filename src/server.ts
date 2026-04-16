@@ -15,7 +15,7 @@ console.log("Starting server... \n");
  * Get port from environment and store in Express.
  */
 
-const port = normalizePort(CONFIG.PORT || "3000");
+const port = normalizePort(process.env.PORT || CONFIG.PORT || "3000");
 app.set("port", port);
 
 /**
