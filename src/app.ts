@@ -27,22 +27,25 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
 // ✅ 2. CORS 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
-  'http://localhost:8080',
-  'http://localhost:8081'
-];
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? (process.env.ALLOWED_ORIGINS?.split(',') || [])
+  : [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://localhost:8080',
+      'http://localhost:8081'
+    ];
 
 app.use(cors({
-  origin: function (
-  origin: string | undefined,
-  callback: (err: Error | null, allow?: boolean) => void
-) {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`Blocked origin: ${origin}`); // Helpful for debugging
       callback(new Error("Not allowed by CORS"));
     }
   },

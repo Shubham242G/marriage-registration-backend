@@ -1751,14 +1751,36 @@ export const deleteDocumentById = async (
   next: NextFunction
 ) => {
   try {
-    let existsCheck = await Document.findById(req.params.id).exec();
-    if (!existsCheck) {
-      throw new Error("Document does not exists or already deleted");
+    // Validate ID
+    if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Valid document ID is required" });
     }
-    await Document.findByIdAndUpdate(req.params.id, {
-      $set: { isDeleted: true },
+
+    // Check if document exists and is not already deleted
+    let existsCheck = await Document.findOne({ 
+      _id: req.params.id, 
+      isDeleted: false 
     }).exec();
-    res.status(201).json({ message: "Document Deleted" });
+    
+    if (!existsCheck) {
+      return res.status(404).json({ message: "Document does not exist or already deleted" });
+    }
+
+    // Perform soft delete
+    const updatedDocument = await Document.findByIdAndUpdate(
+      req.params.id,
+      { $set: { isDeleted: true } },
+      { new: true } // Return updated document
+    ).exec();
+
+    if (!updatedDocument) {
+      throw new Error("Failed to update document");
+    }
+
+    res.status(200).json({ 
+      message: "Document Deleted Successfully",
+      data: updatedDocument 
+    });
   } catch (error) {
     next(error);
   }
