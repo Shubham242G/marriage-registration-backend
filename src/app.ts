@@ -26,17 +26,18 @@ mongoose.set("debug", process.env.NODE_ENV !== "production");
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
-// ✅ 2. CORS 
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? (process.env.ALLOWED_ORIGINS?.split(',') || [])
-  : [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://localhost:8080',
-      'http://localhost:8081',
-      'https://marriage-registration-website.vercel.app'
-    ];
+
+// ✅ 2. CORS - HARDCODED FOR PRODUCTION
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'https://marriage-registration-website.vercel.app'
+];
+
+console.log('CORS Allowed Origins:', allowedOrigins);
 
 app.use(cors({
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -46,7 +47,7 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log(`Blocked origin: ${origin}`); // Helpful for debugging
+      console.log(`❌ CORS blocked origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
