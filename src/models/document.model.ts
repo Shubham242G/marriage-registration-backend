@@ -3,7 +3,6 @@ import { model, Model, Schema, Types } from "mongoose";
 interface IDocument {
   userId: Schema.Types.ObjectId;
   groomAadharFront: string;
-
   groomAadharBack: string;
   groomOtherProofImage: string;
   groomBirthProofImage: string;
@@ -49,7 +48,6 @@ interface IDocument {
   signatureImageWitness1: string;
   signatureImageWitness2: string;
   signatureImageWitness3: string;
-  // new fields
   selectedState: string;
   dateOfMarriage: Date;
   venueOfMarriage: string;
@@ -61,8 +59,6 @@ interface IDocument {
   additionalDocumentProofImage: string;
   additionalDocumentBrideProofImage: string;
   additionalDocumentBrideProofName: string;
-
-  // new fields for 2nd marriage
   coupleImageWhiteBackground: string;
   parentAadharMomFrontSide: string;
   parentAadharMomBackSide: string;
@@ -82,10 +78,7 @@ interface IDocument {
   brideOtherInfoOccupation: string;
   brideOtherInfoMaritalStatus: string;
   brideOtherInfoResidingSinceYear: string;
-
-  // new fields for 3rd marriage
   additionalDocumentWitness1Name: string;
-
   additionalDocumentWitness1ProofImage: string;
   additionalDocumentWitness2Name: string;
   additionalDocumentWitness2ProofImage: string;
@@ -94,13 +87,11 @@ interface IDocument {
   witness1PhoneNumber: string;
   witness2PhoneNumber: string;
   witness3PhoneNumber: string;
-
-  groomOtherInfoOccupation: String;
-  groomOtherInfoReligion: String;
-  groomOtherInfoMaritalStatus: String;
-  groomOtherInfoResidingSinceYear: String;
-  brideOtherInfoReligion: String;
-
+  groomOtherInfoOccupation: string;
+  groomOtherInfoReligion: string;
+  groomOtherInfoMaritalStatus: string;
+  groomOtherInfoResidingSinceYear: string;
+  brideOtherInfoReligion: string;
   ParentAadharDadFrontSideBride: string;
   ParentAadharDadBackSideBride: string;
   ParentAadharMomFrontSideBride: string;
@@ -109,13 +100,29 @@ interface IDocument {
   brideOtherIdProofImage: string;
   brideOtherIdProofName: string;
   isDeleted: boolean;
+
+  // ===== NEW FIELDS FOR GROOM =====
+  groomVoterIdFront: string;
+  groomVoterIdBack: string;
+  groomPassportFront: string;
+  groomPassportBack: string;
+  groomBirthCertificateImage: string;
+  groomIdProofType: string; // 'AADHAR' | 'VOTER_ID' | 'PASSPORT'
+  groomBirthProofType: string; // 'PASSPORT' | 'BIRTH_CERTIFICATE'
+
+  // ===== RELIGIOUS CERTIFICATES =====
+  religiousCertificateType: string; // 'SIKH' | 'MUSLIM' | 'CHRISTIAN' | 'OTHER' | 'NONE'
+  religiousCertificateImage: string;
+  religiousCertificateName: string;
+  religiousAuthorityName: string;
+  religiousCertificateDate: Date;
+  religiousCertificateNumber: string;
 }
 
 const DocumentSchema = new Schema(
   {
     userId: Types.ObjectId,
     groomAadharFront: String,
-
     groomAadharBack: String,
     groomOtherProofImage: String,
     groomBirthProofImage: String,
@@ -154,19 +161,17 @@ const DocumentSchema = new Schema(
     groomBirthProofName: String,
     brideOtherProofName: String,
     brideBirthProofName: String,
-    dateOfMarriage: String,
+    dateOfMarriage: Date,
     venueOfMarriage: String,
     groomMobile: String,
     groomEmail: String,
     groomFamilyIdImage: String,
     brideFamilyIdImage: String,
-
     additionalDocumentName: String,
     additionalDocumentProofImage: String,
     additionalDocumentBrideProofImage: String,
     additionalDocumentBrideProofName: String,
     selectedState: String,
-
     coupleImageWhiteBackground: String,
     parentAadharMomFrontSide: String,
     parentAadharMomBackSide: String,
@@ -191,7 +196,6 @@ const DocumentSchema = new Schema(
     ParentAadharMomBackSideBride: String,
     brideOtherInfoResidingSinceYear: String,
     additionalDocumentWitness1Name: String,
-
     additionalDocumentWitness1ProofImage: String,
     additionalDocumentWitness2Name: String,
     additionalDocumentWitness2ProofImage: String,
@@ -200,8 +204,6 @@ const DocumentSchema = new Schema(
     witness1PhoneNumber: String,
     witness2PhoneNumber: String,
     witness3PhoneNumber: String,
-
-    //new
     groomOtherInfoOccupation: String,
     groomOtherInfoReligion: String,
     groomOtherInfoMaritalStatus: String,
@@ -216,6 +218,35 @@ const DocumentSchema = new Schema(
       type: Boolean,
       default: false,
     },
+
+    // ===== NEW FIELDS FOR GROOM =====
+    groomVoterIdFront: String,
+    groomVoterIdBack: String,
+    groomPassportFront: String,
+    groomPassportBack: String,
+    groomBirthCertificateImage: String,
+    groomIdProofType: { 
+      type: String, 
+      enum: ['AADHAR', 'VOTER_ID', 'PASSPORT'],
+      default: 'AADHAR' 
+    },
+    groomBirthProofType: { 
+      type: String, 
+      enum: ['PASSPORT', 'BIRTH_CERTIFICATE'],
+      default: 'PASSPORT' 
+    },
+
+    // ===== RELIGIOUS CERTIFICATES =====
+    religiousCertificateType: { 
+      type: String, 
+      enum: ['SIKH', 'MUSLIM', 'CHRISTIAN', 'OTHER', 'NONE'],
+      default: 'NONE'
+    },
+    religiousCertificateImage: String,
+    religiousCertificateName: String,
+    religiousAuthorityName: String,
+    religiousCertificateDate: Date,
+    religiousCertificateNumber: String,
   },
   {
     timestamps: true,
