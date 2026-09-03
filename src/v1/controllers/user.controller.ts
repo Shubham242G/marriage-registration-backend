@@ -425,78 +425,101 @@ export const registerUserWithEmail = async (
   next: NextFunction
 ) => {
   try {
+    console.log("📥 Registration request received:", req.body);
+
+    // Validate required fields
+    const { email, password, name, phone } = req.body;
+    
+    if (!email || !password || !name) {
+      return res.status(400).json({ 
+        message: "Missing required fields: email, password, and name are required" 
+      });
+    }
+
+    // Check if user exists with email
     const UserExistEmailCheck = await User.findOne({
-      email: new RegExp(`^${req.body.email}$`, "i"),
+      email: new RegExp(`^${email}$`, "i"),
       isDeleted: false,
     }).exec();
 
     if (UserExistEmailCheck) {
-      throw new Error(`User with this email Already Exists`);
+      return res.status(400).json({ message: "User with this email already exists" });
     }
 
-    const UserExistPhoneCheck = await User.findOne({
-      phone: req.body.phone,
-      isDeleted: false,
-    }).exec();
-    if (UserExistPhoneCheck) {
-      throw new Error(`User with this phone Already Exists`);
+    // Check if user exists with phone (if provided)
+    if (phone) {
+      const UserExistPhoneCheck = await User.findOne({
+        phone: phone,
+        isDeleted: false,
+      }).exec();
+      
+      if (UserExistPhoneCheck) {
+        return res.status(400).json({ message: "User with this phone already exists" });
+      }
     }
 
-    // if (req.body.userName && req.body.userName != "") {
-    //   const UserExistUserNameCheck = await User.findOne({
-    //     userName: new RegExp(`^${req.body.userName}$`, "i"),
-    //   }).exec();
+    // Hash password
+    const hashedPassword = await encryptPassword(password);
+    
+    // Create user
+    const user = await new User({ 
+      ...req.body,
+      password: hashedPassword,
+    }).save();
 
-    //   if (UserExistUserNameCheck) {
-    //     throw new Error(`User with this username already exists`);
-    //   }
-    // }
+    console.log("✅ User created successfully:", user._id);
 
-    req.body.password = await encryptPassword(req.body.password);
-
-    const user = await new User({ ...req.body }).save();
-
-    const html = await welcomeEmail(req.body.name, req.body.email);
-
-    console.log("check working");
-
+    // Send welcome email (wrap in try-catch to prevent registration failure)
     try {
+      const html = await welcomeEmail(name, email);
+      
       const BrevoRes = await SendBrevoMail(
         "Welcome to Marriage Registration",
         [
           {
-            name: req?.body?.name,
-            email: req?.body?.email,
+            name: name,
+            email: email,
           },
         ],
         html
       );
-
-      console.log(BrevoRes, "BrevoRes");
-    } catch (error) {
-      console.log(error);
+      
+      console.log("✅ Welcome email sent:", BrevoRes);
+    } catch (emailError) {
+      // Log email error but don't fail the registration
+      console.error("❌ Failed to send welcome email:", emailError);
     }
 
     res.status(201).json({
-      message:
-        (req.body.role && req.body.role != ""
-          ? `${req.body.role}`.toLowerCase()
-          : "User") + " Created",
-      data: user._id,
+      message: "User Created Successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      },
     });
   } catch (error) {
-    // Stale username_1 index fires after successful insert — treat as success
-    const err = error as any
-    if (err?.code === 11000 && err?.keyPattern?.username) {
-      return res.status(201).json({
-        message: "user Created",
-        data: null,
-      });
+    console.error("❌ Registration error:", error);
+    
+    // Handle duplicate key error
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+      const keyPattern = (error as any).keyPattern;
+      if (keyPattern?.email) {
+        return res.status(400).json({ message: "Email already exists" });
+      }
+      if (keyPattern?.phone) {
+        return res.status(400).json({ message: "Phone number already exists" });
+      }
+      if (keyPattern?.username) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
     }
+    
     next(error);
-  
   }
 };
+
 
 export const addUser = async (
   req: Request,
